@@ -24,7 +24,7 @@ CLEAN_SUBPROJECTS=${CLEAN_SUBPROJECTS_${SUBPROJECTS}}
 
 
 # Project Name
-PROJECTNAME=Simone_timer_07'03.X
+PROJECTNAME=Simone_timer_07_03.X
 
 # Active Configuration
 DEFAULTCONF=default

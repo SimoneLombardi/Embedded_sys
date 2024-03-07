@@ -9,6 +9,11 @@
 
 
 #include "xc.h"
+#include "timer.h"
+
+#define TIMER1 1
+#define TIMER2 2
+
 
 int main(void) {
     return 0;
