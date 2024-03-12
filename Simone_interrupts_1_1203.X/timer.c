@@ -10,7 +10,6 @@
 #include "timer.h"
 
 void tmr_setup_period(int timer, int ms, int interr_act){
-    long FCY = 72000000;
     switch(timer){
         case 1:
             T1CONbits.TCS = 0; // set clock source to internal 72 MHz
@@ -63,16 +62,20 @@ int tmr_wait_period(int timer){
             ret_val = IFS0bits.T1IF;// save flag value before reset
             // set flag bit to 0 --> flag goes to one when timer expire
             IFS0bits.T1IF = 0; 
-            // reset the timer and start watching the flag
-            TMR1 = 0;
+            if(ret_val == 1){
+                 // reset the timer and start watching the flag
+                TMR1 = 0;
+            }
 
             break;
         case 2:
             ret_val = IFS0bits.T2IF; // save flag value before reset
             // set flag bit to 0 --> flag goes to one when timer expire
             IFS0bits.T2IF = 0; 
-            // reset the timer and start watching the flag
-            TMR2 = 0;
+            if(ret_val == 1){
+                // reset the timer and start watching the flag
+                TMR2 = 0;
+            }
 
             break;
     }

@@ -28,14 +28,14 @@ int main(void) {
     tmr_setup_period(TIMER1, 200, 0);  // 2.5 Hz timer 1, no interrupt
     tmr_setup_period(TIMER2, 100, 1); // 5Hz timer 2, si interrupt
     
-    int controllo = 0;
+    //int controllo = 0;
     
     while(1){
-        /*if(tmr_wait_period(TIMER1)){
+        if(tmr_wait_period(TIMER1)){
             LATAbits.LATA0 = (!LATAbits.LATA0);
-        }*/
+        }
         
-        if(IFS0bits.T1IF == 1){
+        /*if(IFS0bits.T1IF == 1){
             tmr_wait_period(TIMER1); // reset of timer and flag
             controllo = (!controllo);
         }
@@ -46,7 +46,7 @@ int main(void) {
         }else{
             // turn led ON and wait
             LATAbits.LATA0 = 1;
-        }
+        }*/
     }
     
     return 0;

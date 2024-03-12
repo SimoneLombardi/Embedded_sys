@@ -33,6 +33,7 @@
 
 #define TIMER1 1
 #define TIMER2 2
+#define FCY 72000000
 
 #include <xc.h> // include processor files - each processor file is guarded.  
 
