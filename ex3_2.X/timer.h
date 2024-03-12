@@ -31,6 +31,9 @@
 #ifndef XC_HEADER_TEMPLATE_H
 #define	XC_HEADER_TEMPLATE_H
 
+#define TIMER1 1
+#define TIMER2 2
+
 #include <xc.h> // include processor files - each processor file is guarded.  
 
 // TODO Insert appropriate #include <>
@@ -38,6 +41,9 @@
 // TODO Insert C++ class definitions if appropriate
 
 // TODO Insert declarations
+void tmr_setup_period(int timer, int ms);
+int tmr_wait_period(int timer);
+void tmr_wait_ms(int timer, int ms);
 
 // Comment a function and leverage automatic documentation with slash star star
 /**
