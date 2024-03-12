@@ -33,6 +33,7 @@
 
 #define TIMER1 1
 #define TIMER2 2
+#define FCY 72000000
 
 #include <xc.h> // include processor files - each processor file is guarded.  
 
@@ -41,7 +42,7 @@
 // TODO Insert C++ class definitions if appropriate
 
 // TODO Insert declarations
-void tmr_setup_period(int timer, int ms);
+void tmr_setup_period(int timer, int ms, int interr_act);
 int tmr_wait_period(int timer);
 void tmr_wait_ms(int timer, int ms);
 

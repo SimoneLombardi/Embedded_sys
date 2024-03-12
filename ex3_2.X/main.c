@@ -16,6 +16,9 @@ void __attribute__((__interrupt__, no_auto_psv)) _INT1Interrupt(void){
     TMR2 = 0; // reset timer
     IFS0bits.T2IF = 0; // set timer flag to 0 --> to read next interrupt
     
+    //il cambiamento ha effetto solo all'uscita dalla funzione interrupt?
+    LATGbits.LATG9 = (!LATGbits.LATG9);
+    
     while(1){
         while(tmr_wait_period(TIMER2) == 0){}
         if(IFS1bits.INT1IF == 0){
@@ -25,7 +28,9 @@ void __attribute__((__interrupt__, no_auto_psv)) _INT1Interrupt(void){
         } // tasto ancora premuto continue
     }
     
-    LATGbits.LATG9 = (!LATGbits.LATG9);
+   
+    IFS1bits.INT1IF = 0;
+    
 }
 
 
