@@ -48,6 +48,8 @@ int main(void) {
     LATGbits.LATG9 = 0;
     
     RPINR0bits.INT1R = 0x58; // remapping of pin to interrupt
+    // RPINR0bits.INT1R == registro (flag) di una interrupt costumizzabile
+    // 0x58 == indirizzo registro del pin
     INTCON2bits.GIE = 1;  // general interrupt enable
     IFS1bits.INT1IF = 0; // i flag
     IEC1bits.INT1IE = 1; // i enable
