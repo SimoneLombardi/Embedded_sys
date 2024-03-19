@@ -21,25 +21,6 @@ int main(void) {
     
     tmr_setup_period(TIMER1, 200);
     
-    /*
-    // fronte salita della flag
-    int controllo = 0; 
-    
-    while(1){
-        if(IFS0bits.T1IF == 1){
-            tmr_wait_period(TIMER1); // reset of timer and flag
-            controllo = (!controllo);
-        }
-        
-        if(controllo == 0){
-            // turn led OFF and wait
-            LATAbits.LATA0 = 0;
-        }else{
-            // turn led ON and wait
-            LATAbits.LATA0 = 1;
-        }
-    }
-    */
     while(1){
         LATAbits.LATA0 = value;
         tmr_wait_period(TIMER1);

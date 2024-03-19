@@ -236,10 +236,10 @@ __FUID0
  .debug_abbrev    0x000000         0xae build/default/production/main.o
  .debug_abbrev    0x0000ae         0xd6 build/default/production/timer.o
 
-.debug_line       0x000000        0x252
+.debug_line       0x000000        0x250
  *(.debug_line)
- .debug_line      0x000000        0x11c build/default/production/main.o
- .debug_line      0x00011c        0x136 build/default/production/timer.o
+ .debug_line      0x000000        0x11a build/default/production/main.o
+ .debug_line      0x00011a        0x136 build/default/production/timer.o
 
 .debug_frame      0x000000         0x76
  *(.debug_frame)

@@ -75,25 +75,3 @@ void tmr_wait_period(int timer){
             break;
     }
 }
-
-/*
-void tmr_wait_period(int timer){
-
-    switch(timer){
-        case 1:
-            // set flag bit to 0 --> flag goes to one when timer expire
-            IFS0bits.T1IF = 0; 
-            // reset the timer and start watching the flag
-            TMR1 = 0;
-
-            break;
-        case 2:
-            // set flag bit to 0 --> flag goes to one when timer expire
-            IFS0bits.T2IF = 0; 
-            // reset the timer and start watching the flag
-            TMR2 = 0;
-
-            break;
-    }
-}
-*/
