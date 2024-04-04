@@ -26,18 +26,23 @@ void __attribute__((__interrupt__, no_auto_psv__)) _INT1Interrupt(){
     
     IFS1bits.INT1IF = 0;            // Reset button flag
     IEC0bits.T2IE = 1;              // Enable T2 interrupt
-    tmr_setup_period(TIMER2, 50);
+    IEC1bits.INT1IE = 0;            // Disable button
+    tmr_setup_period(TIMER2, 30);
 }
 
 void __attribute__((__interrupt__, no_auto_psv__)) _T2Interrupt(){
     
-    TMR2 = 0;               // Reset timer2
     IFS0bits.T2IF = 0;      // Reset timer2 flag
+    IEC0bits.T2IE = 0;      // Disable timer2
+    T2CONbits.TON = 0;      // Stop the timer
+    IFS1bits.INT1IF = 0;    // Reset button flag
+    IEC1bits.INT1IE = 1;    // Enable button
     
-    if (IFS1bits.INT1IF == 0){
+    if (PORTEbits.RE8 == 1){                     
         LATGbits.LATG9 = (!LATGbits.LATG9);
     }
 }
+
 
 int main(void) {
     
@@ -85,6 +90,6 @@ int main(void) {
         tmr_wait_period(TIMER1);
         state_ld1 = (!state_ld1);
     }
-    
+
     return 0;
 }
