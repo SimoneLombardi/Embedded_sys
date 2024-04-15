@@ -92,9 +92,9 @@ void tmr_setup_period(int timer, int ms, int interr_act){
              *to that so we approximate the value to the next integer
              */
             prescaler_bits = tmr_compute_prescaler(ms);
-            T1CONbits.TCKPS = prescaler_bits; // set all the bits to 1
+            T2CONbits.TCKPS = prescaler_bits; // set all the bits to 1
             
-            PR1 = (FCY / tmr_convert_prescaler(prescaler_bits))*(ms/1000.0); 
+            PR2 = (FCY / tmr_convert_prescaler(prescaler_bits))*(ms/1000.0); 
             
             if(interr_act == 1){
                 IEC0bits.T2IE = 1; // activate enable for interrupts
