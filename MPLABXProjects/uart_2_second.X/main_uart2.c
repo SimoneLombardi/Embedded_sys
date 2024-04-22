@@ -12,12 +12,18 @@
 #include "string.h"
 
 
-uint16_t button_E8;
-uint16_t button_E9;
+uint16_t BUTTON_E8;
+uint16_t BUTTON_E9;
 
-uint16_t missed_timer;
-uint16_t recived_char;
-uint16_t tpf_led_blink;
+uint16_t NEW_COMM;
+uint16_t REC_CHAR;
+uint16_t LED_BL_COUNTER; 
+
+uint16_t COMM_INDX;
+char COMMAND[5];
+char RESET_STR[5] = {'\0'};
+
+
 
 void __attribute__((__interrupt__, no_auto_psv__)) _INT1Interrupt(void){
     IEC1bits.INT1IE = 0; // ENABLE to zero
@@ -27,7 +33,7 @@ void __attribute__((__interrupt__, no_auto_psv__)) _INT1Interrupt(void){
     // the assignement to avoid the conflict of both button using the uart
     IFS1bits.INT1IF = 0; // reset the flag of the corresponding button
     //LATAbits.LATA0 = (!LATAbits.LATA0);
-    button_E8 = 1;
+    BUTTON_E8 = 1;
     
     //TMR1 = 0;
     //IFS0bits.T1IF = 0; // reset flag timer
@@ -40,7 +46,7 @@ void __attribute__((__interrupt__, no_auto_psv__)) _INT2Interrupt(void){
     
     IFS1bits.INT2IF = 0; // reset the flag of the corresponding button
     //LATGbits.LATG9 = (!LATGbits.LATG9);
-    button_E9 = 1;
+    BUTTON_E9 = 1;
     
     //TMR1 = 0;
     //IFS0bits.T1IF = 0; // reset flag timer
@@ -61,7 +67,7 @@ void __attribute__((__interrupt__, no_auto_psv__)) _T1Interrupt(){
         IEC1bits.INT1IE = 1;
         IEC1bits.INT2IE = 1;
     }*/
-    tpf_led_blink = tpf_led_blink + 1; //to make LD2 blink at 2.5Hz
+    LED_BL_COUNTER = LED_BL_COUNTER + 1; //to make LD2 blink at 2.5Hz
     // first method only 1 enable is restored in each statements
 }
 
@@ -84,7 +90,14 @@ void __attribute__((__interrupt__, no_auto_psv__)) _T1Interrupt(){
 
 void __attribute__((__interrupt__, no_auto_psv__))_U1RXInterrupt(void){
     IFS0bits.U1RXIF = 0; // reset INTERR flag to 0
-    recived_char = recived_char + 1; // increase number of recived char
+    
+    COMMAND[COMM_INDX] = U1RXREG; // save the new char in the string
+    COMM_INDX++; // increase position index
+    REC_CHAR++;
+    
+    if (COMM_INDX == 4){ // if i have a complete command make the control
+        NEW_COMM = 1;
+    }
 }
 
 void __attribute__((__interrupt__, no_auto_psv__))_U1TXInterrupt(void){
@@ -95,35 +108,35 @@ void __attribute__((__interrupt__, no_auto_psv__))_U1TXInterrupt(void){
     IEC1bits.INT2IE = 1;
 }
 
+// ----------------------------------- utilty function ------------------------------ //
+
 void send_char(char carattere){
     U1TXREG = carattere;
 }
 
-void send_string(uint16_t button, uint16_t valore){
-    char send_string[100];
+void send_string(char *input_string){
+    char toSend_str[100];
     
-    switch(button){
-        case 1: sprintf(send_string, "C=%d", valore);break;
-        case 2: sprintf(send_string, "D=%d", valore);break;
-    }
-    
-    for(uint16_t i = 0; i < strlen(send_string); i++){
-        send_char(send_string[i]);
-    }
-    //IEC1bits.INT1IE = 1;
-    //IEC1bits.INT2IE = 1;
-    //LATAbits.LATA0 = (!LATAbits.LATA0);
-}
-
-void log_string(char *send_string){
-    for(uint16_t i = 0; i < strlen(send_string); i++){
-        send_char(send_string[i]);
+    sprintf(toSend_str, "%s", input_string);
+    for (uint16_t i = 0; i < strlen(input_string); i++){
+        send_char(toSend_str[i]);
     }
 }
 
-void algo(){
+void algo_simul(){
     tmr_wait_ms(TIMER2, 7);
     // fake 7ms algoritm
+}
+
+void button_action(uint16_t button, uint16_t valore){
+    char toSend_str[100];
+    
+    switch(button){
+        case 1: sprintf(toSend_str, "C=%d", valore);break;
+        case 2: sprintf(toSend_str, "D=%d", valore);break;
+    }
+    
+    send_string(toSend_str);
 }
 
 int command_recognition(char *command_string){
@@ -161,8 +174,8 @@ int main(void) {
     U1STAbits.UTXEN = 1; // enable U1TX --> trasmission
     
     // TX reg INTERR
-    U1STAbits.URXISEL0 = 1; 
-    U1STAbits.URXISEL1 = 0; 
+    U1STAbits.UTXISEL0 = 1; 
+    U1STAbits.UTXISEL1 = 0; 
     // setting the TX interr to trigger when all the trasmission have occurred, than i can 
     // re enable the buttons
     IEC0bits.U1TXIE = 1; // enable the TX interrupt
@@ -196,77 +209,84 @@ int main(void) {
     
     tmr_setup_period(TIMER1, 10, 1); // bouncing avoidance timer 
     
-    button_E8 = 0;
-    button_E9 = 0;
-    
-    missed_timer = 0;
-    recived_char = 0; // increase every time a CHAR is recived
-    tpf_led_blink = 0; // reset to zero every time is at 20
-    
-    
-    uint16_t wp_ret = 0;
-    uint16_t new_char = 0; // if the recived_char is greater a new char is present
-    uint16_t str_pos = 0;
-    uint16_t comm_action = 0;
+    // GLOBAL VARIABLE INITIALIZATION
+    BUTTON_E8 = 0;
+    BUTTON_E9 = 0;
+    NEW_COMM = 0; // increase every time a CHAR is recived
+    REC_CHAR = 0;
+    LED_BL_COUNTER = 0; // reset to zero every time is at 20
+    COMM_INDX = 0;
+    COMMAND[4] = '\0';
+
+    uint16_t missed_timer = 0;
     uint16_t ld2_active = 1;
-    char command[5];
-    command[5] = '\0';
+    uint16_t comm_action = 0;
     
     
     while(1){
-        algo(); // 7ms delay
+        algo_simul(); // 7ms delay
         
-        if(recived_char > new_char){
-            command[str_pos] = U1RXREG;
-            str_pos++;
-            new_char++;
+        if(NEW_COMM == 1){
+            IEC0bits.U1RXIE = 0; // avoid char insertion in OOB position
             
-            if(strlen(command) > 3){
-                comm_action = command_recognition(command);
-                log_string(command);
-                str_pos = 0;
-            }
+            comm_action = command_recognition(COMMAND);
+            COMMAND[4] = '\0';
+            send_string(COMMAND); // da togliere
+            COMM_INDX = 0;
+            NEW_COMM = 0;
+            
+            // reset command string
+            sprintf(COMMAND, "%s", RESET_STR);
+            
+            IEC0bits.U1RXIE = 1;
         }
         
         if (comm_action == 1){
             LATAbits.LATA0 = (!LATAbits.LATA0);
             comm_action = 0;
         }else if(comm_action == 2){
-            ld2_active = (!ld2_active);
+            switch(ld2_active){
+                case 1: ld2_active = 0; break;
+                case 0: ld2_active = 1; break;
+            }
             comm_action = 0;
         }
         
-        if(tpf_led_blink == 20 && ld2_active == 1){
-            LATGbits.LATG9 = (!LATGbits.LATG9);
-            tpf_led_blink = 0;
+        if(LED_BL_COUNTER == 20){
+            if(ld2_active == 1){
+                LATGbits.LATG9 = (!LATGbits.LATG9);
+            }
+            LED_BL_COUNTER = 0;
         }
         
-        if (button_E8 == 1){
+        if (BUTTON_E8 == 1){
             //send_char('a');
             //send_string("C=", 11);
             //LATGbits.LATG9 = 1;// ----> per qualche ragione adesso questo led si 
                                 // accende subito senza premere nessun tasto
             //temp = 11;
             //send_number(11);
-            send_string(1, recived_char);
+            button_action(1, REC_CHAR);
             //LATGbits.LATG9 = (!LATGbits.LATG9);
-            button_E8 = 0;
+            BUTTON_E8 = 0;
         }
         
-        if (button_E9 == 1){
+        if (BUTTON_E9 == 1){
             //send_char('b');
             //send_string("D=", 22);
             //LATAbits.LATA0 = 1; 
             
             //temp = 22;
             //send_number(22);
-            send_string(2, missed_timer);
+            button_action(2, missed_timer);
             //LATGbits.LATG9 = (!LATGbits.LATG9);
-            button_E9 = 0;
+            BUTTON_E9 = 0;
         }
     
-        wp_ret = tmr_wait_period(TIMER1);
-        missed_timer = missed_timer + wp_ret;
+        if(tmr_wait_period(TIMER1) == 1){
+            missed_timer++;
+        }
+        
         // this function returns the value of the TIMER flag upon entering the call, 
         // a 0 --> dedline not reached
         // a 1 --> dedline reached (and missed)
