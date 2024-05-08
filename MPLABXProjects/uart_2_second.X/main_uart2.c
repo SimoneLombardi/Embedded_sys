@@ -154,37 +154,50 @@ int command_recognition(char *command_string){
         switch(command_string[3]){
             case '1': return 1; break;
             case '2': return 2; break;
-            default: return 0; break;
+            default: break;
         }
     }
+    
+    return 0;
+}
+
+
+int uart_setup(int TX_interrupt_type){
+    // UART SET UP
+    // this is fixed since we have a space problem on the car
+    RPINR18bits.U1RXR = 0x4b; // the input needs to be remapped to a particular pin
+                              // as for the BUTTON to INTERR remapping (RX reg)
+    RPOR0bits.RP64R = 1;      // on the other hand the output only needs to be "activated"
+                              // since is a DATA output not a SINGNAL (TX reg)
+    
+    // auto setting the baude rate
+    U1BRG = 468;
+    
+    U1MODEbits.UARTEN = 1; // enable uart COMMUNICATION --> similar to GEN ENAB
+    U1STAbits.UTXEN = 1; // enable U1TX --> trasmission
+    
+    // TX reg INTERR type selection
+    if(TX_interrupt_type < 0 || TX_interrupt_type > 3){
+        return 0;
+    }else{
+        U1STAbits.URXISEL = TX_interrupt_type;
+        IEC0bits.U1TXIE = 1; // enable the TX interrupt only if setted
+    }
+    
+    // RX reg INTERR, fixed on interrupt on single data recived
+    U1STAbits.URXISEL0 = 0; // RX interr set to trigger for every char recived
+    U1STAbits.URXISEL1 = 0;
+    
+    IEC0bits.U1RXIE = 1; // RX interr enable
+    
+    return 0;
 }
 
 int main(void) {
     // disable analog pin
     ANSELA = ANSELB = ANSELC = ANSELD = ANSELE = ANSELG = 0x0000;
     
-    // UART SET UP
-    RPINR18bits.U1RXR = 0x4b; // the input needs to be remapped to a particular pin
-                              // as for the BUTTON to INTERR remapping (RX reg)
-    RPOR0bits.RP64R = 1;      // on the other hand the output only needs to be "activated"
-                              // since is a DATA output not a SINGNAL (TX reg)
-    
-    U1BRG = 468; // set baude rate
-    U1MODEbits.UARTEN = 1; // enable uart COMMUNICATION --> similar to GEN ENAB
-    U1STAbits.UTXEN = 1; // enable U1TX --> trasmission
-    
-    // TX reg INTERR
-    U1STAbits.UTXISEL0 = 1; 
-    U1STAbits.UTXISEL1 = 0; 
-    // setting the TX interr to trigger when all the trasmission have occurred, than i can 
-    // re enable the buttons
-    IEC0bits.U1TXIE = 1; // enable the TX interrupt
-    
-    // RX reg INTERR
-    U1STAbits.URXISEL0 = 0; // RX interr set to trigger for every char recived
-    U1STAbits.URXISEL1 = 0;
-    
-    IEC0bits.U1RXIE = 1; // RX interr enable
+    uart_setup(9600, 1);
     
     // LED SET UP
     TRISGbits.TRISG9 = 0; // output
