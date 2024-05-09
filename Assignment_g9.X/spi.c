@@ -57,7 +57,7 @@ void spi_magOn(){
     tmr_wait_ms(TIMER1,2);
 }
 
-uint16_t spi_magRead(uint16_t address, uint16_t mask, uint16_t divide){
+int16_t spi_magRead(int16_t address, int16_t mask, int16_t divide){
     int16_t LSB=0;
     int16_t MSB=0;
     int16_t trash;
@@ -74,9 +74,15 @@ uint16_t spi_magRead(uint16_t address, uint16_t mask, uint16_t divide){
 }
 
 
+
+
 int spi_write(unsigned int addr){
+    int16_t value;
+    
     while(SPI1STATbits.SPITBF); //waiting buffer to free up
-    SPI1BUF=addr;
+    SPI1BUF = addr;
     while(SPI1STATbits.SPIRBF==0); //waiting buffer to receive something
-    return SPI1BUF;
+    value = SPI1BUF;
+    
+    return value;
 }

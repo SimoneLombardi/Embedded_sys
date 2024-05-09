@@ -38,4 +38,4 @@
 int spi_write(unsigned int addr);
 void spi_setup();
 void spi_magOn();
-uint16_t spi_magRead(uint16_t address, uint16_t mask, uint16_t divide);
+int16_t spi_magRead(int16_t address, int16_t mask, int16_t divide);
